@@ -1,5 +1,5 @@
 import React, { createContext, useState, useContext, ReactNode, useEffect } from 'react';
-import api from '../services/api';
+import api from '../services/api.ts';
 
 interface User {
   id: number;
@@ -36,19 +36,25 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     try {
       const response = await api.post('/auth/login', { email, senha: password });
       const { token } = response.data;
+      
+      const tokenParts = token.split('.');
+      if (tokenParts.length !== 3) {
+        throw new Error('Invalid token format');
+      }
 
-      // Decodificar o token JWT para extrair as informações do usuário
+      if (!token) {
+        throw new Error('Token not available');
+      }
+  
       const decodedToken: any = JSON.parse(atob(token.split('.')[1]));
-
+  
       setUser({ id: decodedToken.id, role: decodedToken.role });
       setToken(token);
-
-      // Persistir o token no localStorage
+  
       localStorage.setItem('authToken', token);
-
-      // Adicionar o token nos cabeçalhos padrão do Axios
       api.defaults.headers.common['Authorization'] = `Bearer ${token}`;
     } catch (error) {
+      console.error('Failed to decode token:', error); // Log the error for debugging
       throw new Error('Erro ao fazer login');
     }
   };

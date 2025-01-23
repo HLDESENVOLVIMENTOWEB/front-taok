@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import api from '../services/api';
+import api from '../services/api.ts';
 import { useNavigate } from 'react-router-dom';
 
 const Register: React.FC = () => {
