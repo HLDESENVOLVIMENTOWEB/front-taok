@@ -6,6 +6,10 @@ interface User {
   role: string;
 }
 
+interface LoginResponse {
+  token: string;
+}
+
 interface AuthContextData {
   user: User | null;
   token: string | null;
@@ -24,29 +28,30 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   useEffect(() => {
     const savedToken = localStorage.getItem('authToken');
     if (savedToken) {
-      api.defaults.headers.common['Authorization'] = `Bearer ${savedToken}`;
-      const decodedToken: any = JSON.parse(atob(savedToken.split('.')[1]));
-      setUser({ id: decodedToken.id, role: decodedToken.role });
-      setToken(savedToken);
+      const decodedToken = decodeToken(savedToken);
+      if (decodedToken) {
+        setUser({ id: decodedToken.id, role: decodedToken.role });
+        setToken(savedToken);
+        api.defaults.headers.common['Authorization'] = `Bearer ${savedToken}`;
+      } else {
+        signOut(); 
+      }
     }
   }, []);
+  
 
   // Função para login
   const signIn = async (email: string, password: string) => {
     try {
-      const response = await api.post('/auth/login', { email, senha: password });
+      const response = await api.post<LoginResponse>('/usuarios/login', { email, senha: password });
       const { token } = response.data;
-      
-      const tokenParts = token.split('.');
-      if (tokenParts.length !== 3) {
-        throw new Error('Invalid token format');
-      }
 
-      if (!token) {
-        throw new Error('Token not available');
-      }
+      console.log(token)
   
-      const decodedToken: any = JSON.parse(atob(token.split('.')[1]));
+      const decodedToken = decodeToken(token);
+      if (!decodedToken) {
+        throw new Error('Failed to decode token');
+      }
   
       setUser({ id: decodedToken.id, role: decodedToken.role });
       setToken(token);
@@ -54,10 +59,25 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       localStorage.setItem('authToken', token);
       api.defaults.headers.common['Authorization'] = `Bearer ${token}`;
     } catch (error) {
-      console.error('Failed to decode token:', error); // Log the error for debugging
+      console.error('Error during sign-in:', error);
       throw new Error('Erro ao fazer login');
     }
   };
+
+  const decodeToken = (token: string): any | null => {
+    try {
+      const tokenParts = token.split('.');
+      if (tokenParts.length !== 3) {
+        throw new Error('Invalid token format');
+      }
+      return JSON.parse(atob(tokenParts[1]));
+    } catch (error) {
+      console.error('Token decoding failed:', error);
+      return null;
+    }
+  };
+  
+  
 
   // Função para logout
   const signOut = () => {

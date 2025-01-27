@@ -1,6 +1,9 @@
 import React, { useState } from 'react';
 import { useAuth } from '../context/AuthContext.tsx';
 import { useNavigate } from 'react-router-dom';
+import { Form, Input, Button, Alert, Typography } from 'antd';
+
+const { Title, Text } = Typography;
 
 const Login: React.FC = () => {
   const [email, setEmail] = useState('');
@@ -9,14 +12,13 @@ const Login: React.FC = () => {
   const { signIn } = useAuth();
   const navigate = useNavigate();
 
-  const handleSubmit = async (event: React.FormEvent) => {
-    event.preventDefault();
+  const handleSubmit = async () => {
     setError(null);
 
     try {
       await signIn(email, password);
       alert('Login realizado com sucesso!');
-      navigate('/dashboard'); // Redireciona para o dashboard após login bem-sucedido
+      navigate('/dashboard'); 
     } catch (err) {
       setError('Email ou senha inválidos. Tente novamente.');
     }
@@ -24,64 +26,46 @@ const Login: React.FC = () => {
 
   return (
     <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh' }}>
-      <div style={{ width: '300px', padding: '20px', border: '1px solid #ccc', borderRadius: '8px' }}>
-        <h1 style={{ textAlign: 'center', marginBottom: '20px' }}>Login</h1>
-        <form onSubmit={handleSubmit}>
-          <div style={{ marginBottom: '15px' }}>
-            <label htmlFor="email" style={{ display: 'block', marginBottom: '5px' }}>Email:</label>
-            <input
-              id="email"
+      <div style={{ width: '100%', maxWidth: '400px', padding: '20px', border: '1px solid #f0f0f0', borderRadius: '8px' }}>
+        <Title level={3} style={{ textAlign: 'center', marginBottom: '20px' }}>Login</Title>
+        <Form layout="vertical" onFinish={handleSubmit}>
+          <Form.Item
+            label="Email"
+            name="email"
+            rules={[{ required: true, message: 'Por favor, insira seu email!' }]}
+          >
+            <Input
               type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              required
-              style={{
-                width: '100%',
-                padding: '10px',
-                border: '1px solid #ccc',
-                borderRadius: '4px',
-              }}
+              placeholder="Digite seu email"
             />
-          </div>
-          <div style={{ marginBottom: '15px' }}>
-            <label htmlFor="password" style={{ display: 'block', marginBottom: '5px' }}>Senha:</label>
-            <input
-              id="password"
-              type="password"
+          </Form.Item>
+          <Form.Item
+            label="Senha"
+            name="password"
+            rules={[{ required: true, message: 'Por favor, insira sua senha!' }]}
+          >
+            <Input.Password
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              required
-              style={{
-                width: '100%',
-                padding: '10px',
-                border: '1px solid #ccc',
-                borderRadius: '4px',
-              }}
+              placeholder="Digite sua senha"
             />
-          </div>
+          </Form.Item>
           {error && (
-            <div style={{ color: 'red', marginBottom: '15px', textAlign: 'center' }}>
-              {error}
-            </div>
+            <Alert
+              message={error}
+              type="error"
+              showIcon
+              style={{ marginBottom: '15px' }}
+            />
           )}
-          <button
-            type="submit"
-            style={{
-              width: '100%',
-              padding: '10px',
-              backgroundColor: '#007BFF',
-              color: '#fff',
-              border: 'none',
-              borderRadius: '4px',
-              cursor: 'pointer',
-            }}
-          >
-            Entrar
-          </button>
-        </form>
-        <p style={{ textAlign: 'center', marginTop: '15px' }}>
-          Não tem uma conta? <a href="/register" style={{ color: '#007BFF' }}>Registre-se</a>
-        </p>
+          <Form.Item>
+            <Button type="primary" htmlType="submit" block>
+              Entrar
+            </Button>
+          </Form.Item>
+        </Form>
       </div>
     </div>
   );
