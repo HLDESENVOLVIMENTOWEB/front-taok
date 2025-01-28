@@ -1,0 +1,136 @@
+import React from 'react';
+import { Form, Input, Button, Card, Typography, Layout, Menu, Select, message } from 'antd';
+import { useNavigate, Link } from 'react-router-dom';
+import {
+  UserOutlined,
+  TeamOutlined,
+  FileTextOutlined,
+  BarChartOutlined,
+  IdcardFilled,
+} from '@ant-design/icons';
+import api from '../services/api.ts';
+import { useAuth } from '../context/AuthContext.tsx';
+
+const { Header, Content, Footer } = Layout;
+const { Title } = Typography;
+const { Option } = Select;
+
+const CadastrarUsuario: React.FC = () => {
+  const { token } = useAuth();
+  const navigate = useNavigate();
+
+  const onFinish = async (values: any) => {
+    try {
+      await api.post('/usuarios', values, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      message.success('Usuário cadastrado com sucesso!');
+      navigate('/usuarios');
+    } catch (error) {
+      message.error('Erro ao cadastrar usuário');
+    }
+  };
+
+  return (
+    <Layout style={{ minHeight: '100vh' }}>
+     <Header style={{ 
+        backgroundColor: '#001529', 
+        padding: '0 20px', 
+        display: 'flex', 
+        alignItems: 'center', 
+        justifyContent: 'space-between' // Garante que os elementos fiquem bem distribuídos
+      }}>
+        {/* Título à esquerda */}
+        <Title level={3} style={{ color: 'white', margin: 0, flex: 1, textAlign: 'left' }}>
+          Cadastro de usuários
+        </Title>
+
+        {/* Logo centralizada */}
+        <div style={{ flex: 1, display: 'flex', justifyContent: 'center' }}>
+          <img src="/logo.svg" alt="Logo" style={{ width: '90px', height: '90px' }} />
+        </div>
+
+        {/* Espaço reservado para manter alinhamento correto */}
+        <div style={{ flex: 1 }}></div>
+      </Header>
+      <Layout>
+        <Menu
+          mode="horizontal"
+          style={{ textAlign: 'center', backgroundColor: '#f0f2f5', borderBottom: '1px solid #d9d9d9' }}
+          defaultSelectedKeys={['usuarios']}
+        >
+          <Menu.Item key="dashboard" icon={<IdcardFilled />}>
+            <Link to="/dashboard">Dashboard</Link>
+          </Menu.Item>
+          <Menu.Item key="clientes" icon={<TeamOutlined />}>
+            <Link to="/clientes">Clientes</Link>
+          </Menu.Item>
+          <Menu.Item key="usuarios" icon={<UserOutlined />}>
+            <Link to="/usuarios">Usuários</Link>
+          </Menu.Item>
+          <Menu.Item key="anotacoes" icon={<FileTextOutlined />}>
+            <Link to="/anotacoes">Anotações</Link>
+          </Menu.Item>
+          <Menu.Item key="relatorios" icon={<BarChartOutlined />}>
+            <Link to="/relatorios">Relatórios</Link>
+          </Menu.Item>
+        </Menu>
+        <Content style={{ padding: '20px', display: 'flex', justifyContent: 'center' }}>
+          <Card style={{ maxWidth: 500, width: '100%', boxShadow: '0 4px 8px rgba(0,0,0,0.1)' }}>
+            <Title level={4} style={{ textAlign: 'center' }}>Cadastrar Usuário</Title>
+            <Form layout="vertical" onFinish={onFinish}>
+              <Form.Item
+                label="Nome do Usuário"
+                name="nomeUsuario"
+                rules={[{ required: true, message: 'Por favor, insira o nome do usuário' }]}
+              >
+                <Input placeholder="Digite o nome do usuário" />
+              </Form.Item>
+
+              <Form.Item
+                label="Email"
+                name="email"
+                rules={[
+                  { required: true, message: 'Por favor, insira o email' },
+                  { type: 'email', message: 'Insira um email válido' },
+                ]}
+              >
+                <Input placeholder="Digite o email" />
+              </Form.Item>
+
+              <Form.Item
+                label="Senha"
+                name="senha"
+                rules={[{ required: true, message: 'Por favor, insira a senha' }]}
+              >
+                <Input.Password placeholder="Digite a senha" />
+              </Form.Item>
+
+              <Form.Item
+                label="Função"
+                name="role"
+                rules={[{ required: true, message: 'Por favor, selecione a função' }]}
+              >
+                <Select placeholder="Selecione a função">
+                  <Option value="User">Usuário</Option>
+                  <Option value="Admin">Administrador</Option>
+                </Select>
+              </Form.Item>
+
+              <Form.Item>
+                <Button type="primary" htmlType="submit" block>
+                  Cadastrar
+                </Button>
+              </Form.Item>
+            </Form>
+          </Card>
+        </Content>
+      </Layout>
+      <Footer style={{ textAlign: 'center', backgroundColor: '#001529', color: 'white' }}>
+        Usuários App ©2024 Criado por Hyuri
+      </Footer>
+    </Layout>
+  );
+};
+
+export default CadastrarUsuario;
